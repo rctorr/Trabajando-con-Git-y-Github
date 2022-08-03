@@ -418,11 +418,109 @@ Para poner en práctica ésta operación:
 
 ### 6. Cómo un desarrollador envía código a un repositorio remoto
 
-- git config --list
-- git remote -v
-- git remote remove origin
-- git remote add origin git@github.com:rctorr/demorepo.git
-- git remote -v
-- git origin add github git@github.com:rctorr/demorepo.git
-- git remote -v
-- git remote remove github
+Primero vemos todas las variables de configuración:
+
+```
+$ git config --list
+...
+remote.origin.url=git@github.com:rctorr/demorepo.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+
+$ 
+```
+Observamos unas variables que contienen la información del repo remoto vinculado a nuestro repo local, pero podemos ver ésta información usando el comando `remote` de git de la siguiente forma:
+
+```
+$ git remote -v
+origin	git@github.com:rctorr/demorepo.git (fetch)
+origin	git@github.com:rctorr/demorepo.git (push)
+
+$ 
+```
+Que tenemos dos línea, una usada para realizar el fetch o pull y otra para realizar el push, pero ambas asociadas al mismo nombre **origin**, así que vamos a eliminar el repo remoto llamado **origin**:
+
+```
+$ git remote remove origin
+$ 
+```
+
+Ahora modificamos el archivo `public_html/index.html` agregando el siguiente código:
+
+```
+<head>
+    <link rel="stylesheet" href="static/css/main.css">
+</head>
+```
+Agregamos los cambios al `staging` y creamos un registro (`commit`) y finalmente hacemos un push de los cambios al repo remoto:
+
+```
+$ git add public_html/index.html
+$ git commit -m "Actualizando index.html con los archivos de estilos esternos en static/css/main.css"
+$ git push 
+fatal: No se ha configurado un destino para el push.
+Puedes o especificar una URL desde la línea de comandos o configurar un repositorio remoto usando
+
+    git remote add <nombre> <url>
+
+y luego haciendo push al nombre del remoto
+
+    git push <nombre>
+
+$ 
+```
+Así que no podemos hacer push porque no hay un repo remoto asociado, así que lo asociamos nuevamente y hacemos el push:
+
+```
+$ git remote add github git@github.com:rctorr/demorepo.git
+$ git remote -v
+github	https://github.com/rctorr/demorepo2.git (fetch)
+github	https://github.com/rctorr/demorepo2.git (push)
+$ git push github master
+Username for 'https://github.com': rctorr
+Password for 'https://rctorr@github.com': 
+Enumerando objetos: 7, listo.
+Contando objetos: 100% (7/7), listo.
+Compresión delta usando hasta 4 hilos
+Comprimiendo objetos: 100% (4/4), listo.
+Escribiendo objetos: 100% (4/4), 466 bytes | 466.00 KiB/s, listo.
+Total 4 (delta 2), reusado 0 (delta 0), pack-reusado 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/rctorr/demorepo2.git
+   6b615d8..d7abb2a  master -> master
+```
+
+Ahora vamos a crear el archivo `static/css/main.css` con el contenido:
+
+```
+nav {
+    margin: 0px;
+    padding: 10px;
+    background-color: rgb(200, 200, 200);
+}
+```
+Creamos un registro en el repo con el nuevo archivo y vemos el estado:
+
+```
+$ git add public_html/static/css/main.css 
+$ git commit -m "Agregando archivo main.css"
+[master 7e40896] Agregando archivo main.css
+ 1 file changed, 6 insertions(+)
+ create mode 100644 public_html/static/css/main.css
+$ git status
+En la rama master
+nada para hacer commit, el árbol de trabajo esta limpio
+```
+Ahora git no sabe si está adelante o detrás del repo remoto en github porque no se usó la opción `-u` al momento de hacer el push, así que para activar sel seguimientos entre repo local y remoto usamos lo siguiente:
+
+```
+$ git branch --set-upstream-to=github/master master
+Rama 'master' configurada para hacer seguimiento a la rama remota 'master' de 'github'.
+$ git status
+En la rama master
+Tu rama está adelantada a 'github/master' por 1 commit.
+  (usa "git push" para publicar tus commits locales)
+
+nada para hacer commit, el árbol de trabajo esta limpio
+```
+Así que ahora podemos hacer un push o lo que necesitemos hacer, ¿tú que harías?
+
